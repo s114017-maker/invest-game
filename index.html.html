@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>投資小教室：三個月模擬</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f4f6f8;--card:#fff;--ink:#14213d;--mute:#5d6b82;--line:#d9e0e8;--up:#d64045;--dn:#1b8a6b;--acc:#f2a541;--btn:#14213d;--btnt:#fff;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#101826;--card:#192438;--ink:#e8eef7;--mute:#9aa8bf;--line:#2c3a52;--up:#ff6b6f;--dn:#42c9a3;--btn:#e8eef7;--btnt:#101826;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#101826;--card:#192438;--ink:#e8eef7;--mute:#9aa8bf;--line:#2c3a52;--up:#ff6b6f;--dn:#42c9a3;--btn:#e8eef7;--btnt:#101826;color-scheme:dark}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 "Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif}
+.w{max-width:920px;margin:0 auto;padding:14px}
+h1{font-size:21px;margin:0}h3{margin:0 0 6px;font-size:17px}p{margin:4px 0}
+.top{display:flex;flex-wrap:wrap;gap:10px 20px;justify-content:space-between;align-items:center;margin-bottom:8px}
+.st{display:flex;gap:16px;flex-wrap:wrap}.st small{display:block;color:var(--mute);font-size:12px}.st b{font-size:18px}
+.clock{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;justify-content:space-between;margin-bottom:10px}
+.tabs{display:flex;gap:4px;border-bottom:2px solid var(--line);margin-bottom:12px;overflow-x:auto}
+.tabs button{background:none;border:0;padding:9px 14px;font:inherit;color:var(--mute);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;white-space:nowrap}
+.tabs button[aria-selected=true]{color:var(--ink);font-weight:700;border-color:var(--acc)}
+button:focus-visible,input:focus-visible,select:focus-visible,tr:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+.c{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:10px}
+.n{border-left:6px solid var(--acc)}.m{color:var(--mute);font-size:14px}
+.up{color:var(--up)}.dn{color:var(--dn)}
+table{width:100%;border-collapse:collapse;font-size:15px}th,td{padding:6px;border-bottom:1px solid var(--line);text-align:right}th:nth-child(-n+2),td:nth-child(-n+2){text-align:left}
+tr.s{cursor:pointer}tr.s.on{background:var(--bg)}
+.b{background:var(--btn);color:var(--btnt);border:0;border-radius:6px;padding:8px 14px;font:inherit;cursor:pointer}.b:disabled{opacity:.4;cursor:default}
+.b.buy{background:var(--up);color:#fff}.b.sell{background:var(--dn);color:#fff}.b.go{background:var(--acc);color:#14213d;font-weight:700}
+input,select{padding:7px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink);font:inherit;width:120px}
+.r{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px}
+svg{width:100%;height:auto;display:block}
+.log{max-height:220px;overflow:auto;font-size:14px;color:var(--mute)}
+#msg{min-height:22px;color:var(--acc);font-weight:500;font-size:14px;margin:6px 0}
+details{margin-top:10px}
+</style>
+</head>
+<body>
+<div class="w">
+<div class="top"><h1>投資小教室</h1><div class="st" id="st"></div></div>
+<div class="clock" id="clk"></div>
+<nav class="tabs" id="tabs" role="tablist"></nav>
+<div id="msg" role="status"></div>
+<main id="v"></main>
+<details><summary>重新開始</summary><div class="r"><button class="b" id="apply">清除本機進度，重新開始</button></div><p class="m">只會清除這台裝置的資料。</p></details><p class="m"><a href="#" id="tl">老師登入</a></p>
+</div>
+<script>
+var CAP=1000000,DPM=20,RN=3,N=DPM*RN,PRE=5,T=N+PRE;
+var STK=[
+{id:"2801",n:"晶芯半導體",g:"晶片製造",s:"chip",p:180,b:1.1,v:.018},
+{id:"2802",n:"矽創 IC 設計",g:"晶片設計",s:"chip",p:120,b:1.2,v:.022},
+{id:"2803",n:"先進封測",g:"晶片封測",s:"chip",p:60,b:1.1,v:.02},
+{id:"2804",n:"智慧伺服器",g:"AI 伺服器",s:"ai",p:90,b:1.3,v:.025},
+{id:"2805",n:"全家福超商",g:"連鎖零售",s:"chain",p:150,b:.6,v:.01},
+{id:"2806",n:"鮮味連鎖餐飲",g:"連鎖餐飲",s:"chain",p:45,b:.8,v:.015},
+{id:"2807",n:"安穩金控",g:"金融",s:"fin",p:25,b:.7,v:.01},
+{id:"2808",n:"海運航運",g:"航運",s:"ship",p:70,b:1,v:.03},
+{id:"0050",n:"大型50 ETF",g:"ETF（含晶片、超商、金融）",e:{2801:.35,2802:.15,2805:.2,2807:.3},p:150,v:.004},
+{id:"0056",n:"高股息 ETF",g:"ETF（含超商、金融、航運）",e:{2805:.3,2807:.4,2808:.3},p:35,v:.004}];
+var EV=[
+{d:0,mk:"財經日報",k:"pro",t:"晶片需求回溫　法人估本季出貨年增兩成",b:"多家法人上調半導體產業展望，客戶庫存已降至健康水位，下游訂單開始回補。封測與 IC 設計族群同步受惠。",i:{chip:.03,ai:.02}},
+{d:8,mk:"星光娛樂週刊",k:"ent",t:"偶像聯名便當開賣　超商門市大排長龍",b:"",i:{2805:.04,2806:.03}},
+{d:14,mk:"產業週刊",k:"pro",t:"國際運價連跌三週　航運業獲利轉弱",b:"貨櫃需求不如預期，船公司被迫降價搶貨，法人預期本季獲利下滑。",i:{ship:-.05}},
+{d:21,t:"央行宣布升息一碼",b:"金融業利差擴大；成長型的科技股短線承壓。",i:{fin:.03,chip:-.015,ai:-.015}},
+{d:26,t:"智慧伺服器拿下國際雲端大廠大單",b:"AI 伺服器出貨預期倍增，供應鏈跟著受惠。",i:{2804:.08,chip:.025}},
+{d:33,t:"食材成本上漲，連鎖餐飲毛利恐被擠壓",b:"業者正在評估是否調漲售價。",i:{2806:-.05,2805:-.015}},
+{d:41,t:"美國宣布對進口晶片加徵關稅",b:"半導體供應鏈短線劇烈震盪。",i:{chip:-.06,ai:-.04}},
+{d:47,t:"安穩金控公布季報，獲利優於預期",b:"手續費與利息收入同步成長。",i:{2807:.04}},
+{d:52,t:"全球股市恐慌下跌，台股重挫",b:"國際資金避險，外資大幅賣超。",i:{all:-.045}}];
+var RUM=[
+{c:"#05",t:"內部備忘錄",ok:1},
+{c:"#17",t:"論壇匿名貼文",ok:0},
+{c:"#23",t:"社群可疑帳號",ok:0}];
+var DEP={dem:{n:"活期存款（零存）",r:.001},m1:{n:"一個月定存",r:.004},m2:{n:"兩個月定存",r:.01}};
+var PD={2801:-.006,2802:-.005,2803:-.004,2804:.004,2805:.003,2806:-.002,2807:.004,2808:-.005};
+var TPW="teacher7",isT=false,P,st,tab="mkt",sel="2801",V={},tm=null;
+function rng(a){return function(){a|=0;a=a+0x6D2B79F5|0;var t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function gen(seed){var R=rng(seed),g=function(){var u=R()||1e-9;return Math.sqrt(-2*Math.log(u))*Math.cos(6.2832*R())};
+ var F={},k;["M","chip","ai","chain","fin","ship"].forEach(function(x){F[x]=[];for(var d=0;d<T;d++)F[x].push(g()*(x==="M"?.007:.008))});
+ var sh={};STK.forEach(function(s){sh[s.id]=[]});
+ EV.forEach(function(e){var d=PRE+e.d+1;if(d>=T)return;STK.forEach(function(s){if(s.e)return;var a=0;for(k in e.i){if(k==="all"||k==s.id||k===s.s)a+=e.i[k]}sh[s.id][d]=(sh[s.id][d]||0)+a})});
+ STK.forEach(function(s){if(s.e)return;for(var d=0;d<PRE;d++)sh[s.id][d]=(sh[s.id][d]||0)+(PD[s.id]||0);if(s.s==="chip")for(var d2=PRE+1;d2<PRE+DPM;d2++)sh[s.id][d2]=(sh[s.id][d2]||0)+.003});
+ var Q={},RR={};
+ STK.filter(function(s){return !s.e}).forEach(function(s){var o=s.p,a=[];RR[s.id]=[];for(var d=0;d<T;d++){var r=s.b*F.M[d]+F[s.s][d]+s.v*g()+(sh[s.id][d]||0),c=o*(1+r);a.push(mk(o,c,s.v,g));RR[s.id].push(r);o=a[d].c}Q[s.id]=a});
+ STK.filter(function(s){return s.e}).forEach(function(s){var o=s.p,a=[];for(var d=0;d<T;d++){var r=s.v*g();for(k in s.e)r+=s.e[k]*RR[k][d];var c=o*(1+r);a.push(mk(o,c,s.v,g));o=a[d].c}Q[s.id]=a});
+ return Q}
+function mk(o,c,v,g){var h=Math.max(o,c)*(1+Math.abs(g())*v*.5),l=Math.min(o,c)*(1-Math.abs(g())*v*.5);return{o:+o.toFixed(2),h:+h.toFixed(2),l:+l.toFixed(2),c:+c.toFixed(2)}}
+function fresh(seed,spd){return{seed:seed,spd:spd,r:0,cd:0,run:false,t:spd,cash:CAP,bank:0,fx:[],hold:{},log:[],clue:[],done:false,wait:false}}
+function save(){try{localStorage.setItem("invest3",JSON.stringify(st))}catch(e){}}
+function load(){try{var s=JSON.parse(localStorage.getItem("invest3"));if(s&&s.hold)return s}catch(e){}return fresh(7,30)}
+function px(id,d){return P[id][PRE+(d===undefined?st.cd:d)].c}
+function chg(id){return px(id)/px(id,st.cd-1)-1}
+function f(n,d){return n.toLocaleString("zh-TW",{minimumFractionDigits:d||0,maximumFractionDigits:d||0})}
+function pc(x){return (x>=0?"+":"")+(x*100).toFixed(2)+"%"}
+function cl(x){return x>=0?"up":"dn"}
+function say(t){document.getElementById("msg").textContent=t}
+function fxv(){return st.fx.reduce(function(a,x){return a+x.a},0)}
+function stv(){var t=0;for(var id in st.hold)t+=st.hold[id].q*px(id);return t}
+function total(){return st.cash+st.bank+fxv()+stv()}
+function note(t){st.log.unshift("第"+(st.r+1)+"月第"+(st.cd%DPM+1)+"天　"+t)}
+function fee(a){return Math.max(20,Math.round(a*.001425))}
+function chart(id){var a=P[id].slice(Math.max(0,PRE+st.cd-39),PRE+st.cd+1),W=640,H=240,pl=8,pr=44,mn=1e9,mx=0;
+ a.forEach(function(x){mn=Math.min(mn,x.l);mx=Math.max(mx,x.h)});if(mx===mn)mx=mn+1;
+ var cw=(W-pl-pr)/Math.max(a.length,10),y=function(v){return 8+(1-(v-mn)/(mx-mn))*(H-16)},o="";
+ a.forEach(function(x,i){var cx=pl+i*cw+cw/2,c=x.c>=x.o?"var(--up)":"var(--dn)";
+  o+='<line x1="'+cx+'" x2="'+cx+'" y1="'+y(x.h)+'" y2="'+y(x.l)+'" stroke="'+c+'"/><rect x="'+(cx-cw*.3)+'" y="'+y(Math.max(x.o,x.c))+'" width="'+cw*.6+'" height="'+Math.max(1,Math.abs(y(x.o)-y(x.c)))+'" fill="'+c+'"/>'});
+ return '<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="K 線圖"><text x="'+(W-pr+4)+'" y="14" font-size="11" fill="var(--mute)">'+f(mx,1)+'</text><text x="'+(W-pr+4)+'" y="'+(H-4)+'" font-size="11" fill="var(--mute)">'+f(mn,1)+'</text>'+o+'</svg>'}
+function mkt(){var s=STK.filter(function(x){return x.id===sel})[0],h=st.hold[sel],p=px(sel);
+ var rows=STK.map(function(x){var q=st.hold[x.id];return '<tr class="s'+(x.id===sel?" on":"")+'" data-sel="'+x.id+'" tabindex="0"><td>'+x.id+'</td><td>'+x.n+'<br><span class="m">'+x.g+'</span></td><td class="'+cl(chg(x.id))+'">'+f(px(x.id),2)+'</td><td class="'+cl(chg(x.id))+'">'+pc(chg(x.id))+'</td><td>'+(q?f(q.q):"-")+'</td></tr>'}).join("");
+ return '<div class="c"><table><tr><th>代號</th><th>名稱</th><th>收盤價</th><th>漲跌</th><th>持股</th></tr>'+rows+'</table></div>'+
+ '<div class="c"><h3>'+s.id+' '+s.n+'　<span class="'+cl(chg(sel))+'">'+f(p,2)+'</span></h3><p class="m">日 K 線（最近 40 個交易日，紅漲綠跌）</p>'+chart(sel)+
+ '<div class="r"><label>股數 <input type="number" min="1" step="1" id="q" value="'+(V.q||1000)+'"></label><button class="b buy" data-a="buy">買進</button><button class="b sell" data-a="sell">賣出</button></div>'+
+ '<p class="m">手續費 0.1425%（最低 20 元），賣出另徵證交稅（股票 0.3%，ETF 0.1%）。持有：'+(h?f(h.q)+" 股，成本 "+f(h.c)+" 元":"無")+'</p></div>'}
+function bank(){var l=st.fx.map(function(x,i){return '<tr><td>'+DEP[x.k].n+'</td><td>'+f(x.a)+'</td><td>第 '+(x.m+1)+' 月底</td><td><button class="b" data-b="brk" data-i="'+i+'">提前解約</button></td></tr>'}).join("");
+ return '<div class="c"><h3>活期存款（零存）</h3><p>餘額 <b>'+f(st.bank)+'</b> 元，隨時可存可領，月底付 0.1% 利息。</p><div class="r"><input type="number" min="1" id="bd" value="'+(V.bd||10000)+'" aria-label="活存金額"><button class="b" data-b="in">存入</button><button class="b" data-b="out">提領</button></div></div>'+
+ '<div class="c"><h3>定期存款</h3><p>一個月定存：本月底到期，利息 0.4%。兩個月定存：下月底到期，利息 1.0%。提前解約只拿回本金。</p><div class="r"><select id="dk"><option value="m1">一個月定存</option><option value="m2"'+(st.r>=RN-1?" disabled":"")+'>兩個月定存</option></select><input type="number" min="1" id="fd" value="'+(V.fd||50000)+'" aria-label="定存金額"><button class="b" data-b="fx">存入定存</button></div>'+
+ (l?'<table style="margin-top:8px"><tr><th>種類</th><th>本金</th><th>到期</th><th></th></tr>'+l+'</table>':'<p class="m">目前沒有定存。</p>')+'</div>'}
+function news(){var n=EV.filter(function(e){return Math.floor(e.d/DPM)<=st.r}).reverse().map(function(e){return '<details class="c n"><summary><b>'+e.t+'</b><br><small class="m">'+(e.mk||"財經日報")+'（'+(e.k==="ent"?"大眾娛樂媒體":"專業媒體")+'）　第 '+(Math.floor(e.d/DPM)+1)+' 月公開資訊</small></summary>'+(e.b?'<p>'+e.b+'</p>':'')+'</details>'}).join("");
+ var cl2=st.clue.map(function(c){var r=RUM.filter(function(x){return x.c===c})[0];return '<p>'+r.t+'</p>'}).join("");
+ return '<div class="c"><p class="m">點標題可展開內文。專業媒體重分析，娛樂媒體重話題，不要只看標題就下單。小道消息請在場地尋找紙條。</p></div>'+(n||'<div class="c"><p class="m">目前還沒有新聞。</p></div>')}
+function acct(){var rows="";for(var id in st.hold){var q=st.hold[id],s=STK.filter(function(x){return x.id===id})[0],v=q.q*px(id);rows+='<tr><td>'+id+'</td><td>'+s.n+'</td><td>'+f(q.q)+'</td><td>'+f(q.c)+'</td><td>'+f(v)+'</td><td class="'+cl(v-q.c)+'">'+f(v-q.c)+'</td></tr>'}
+ var t=total(),fin="";
+ if(st.done)fin='<div class="c n"><h3>三個月結束</h3><p>總資產 '+f(t)+' 元，報酬 '+pc(t/CAP-1)+'。</p><p class="m">小道消息真偽揭曉：'+RUM.map(function(r){return r.c+"＝"+(r.ok?"真":"假")}).join("、")+'。回想一下：你相信了哪些？</p></div>';
+ return fin+'<div class="c"><h3>我的帳戶</h3><p>現金 <b>'+f(st.cash)+'</b>　活存 '+f(st.bank)+'　定存 '+f(fxv())+'　股票市值 '+f(stv())+'</p><p>總資產 <b class="'+cl(t-CAP)+'">'+f(t)+'</b>（'+pc(t/CAP-1)+'）</p></div>'+
+ '<div class="c"><h3>持股</h3>'+(rows?'<table><tr><th>代號</th><th>名稱</th><th>股數</th><th>成本</th><th>市值</th><th>損益</th></tr>'+rows+'</table>':'<p class="m">目前沒有持股。</p>')+'</div><div class="c"><h3>交易歷程</h3><div class="log">'+(st.log.length?st.log.join("<br>"):"尚無紀錄")+'</div></div>'}
+function codes(){var R=rng(st.seed*31+7),u={},a=[];while(a.length<=N){var c=1000+Math.floor(R()*9000);if(!u[c]){u[c]=1;a.push(c)}}return a}
+function curIdx(){return st.done?N:st.cd}
+function applyIdx(i){var tr=i>=N?RN-1:Math.floor(i/DPM);while(st.r<tr&&!st.done)endMonth();if(i>=N&&!st.done)endMonth();else if(!st.done)st.cd=i;save();render()}
+function enter(){var v=document.getElementById("pc").value.trim(),i=codes().indexOf(+v);if(i<0)return say("進度碼不正確，請向老師確認。");if(i<=curIdx())return say("你已經在這個進度，或更後面了。");applyIdx(i);say("已同步到老師公布的進度。")}
+function tgo(k){var c=curIdx(),i=c,last=Math.floor(c/DPM)*DPM+DPM-1;if(c>=N)return;
+ if(k==="t1"){if(c===last)return say("本月最後一天，請按「結算本月」。");i=c+1}
+ else if(k==="t5")i=Math.min(c+5,last);else if(k==="tend")i=last;
+ else if(c===last)i=c+1;else return say("還沒到本月最後一天。");
+ if(i===c)return;applyIdx(i)}
+function hdr(){var t=total(),ci=curIdx();document.getElementById("st").innerHTML='<div><small>現金</small><b>'+f(st.cash)+'</b></div><div><small>總資產</small><b class="'+cl(t-CAP)+'">'+f(t)+'</b></div><div><small>報酬</small><b class="'+cl(t-CAP)+'">'+pc(t/CAP-1)+'</b></div>';
+ var tc=isT&&!st.done?'<div style="width:100%"><b>老師控制台</b>　進度碼 <b style="font-size:24px;letter-spacing:3px">'+codes()[ci]+'</b><span class="m">　請公布給全班，學生輸入後即同步</span><div class="r"><button class="b" data-b="t1">下一個交易日</button><button class="b" data-b="t5">快進 5 天</button><button class="b" data-b="tend">到本月最後一天</button><button class="b go" data-b="tnext">結算本月並進入下一階段</button></div></div>':"";
+ var sc=(st.done||isT)?"":'<span class="r" style="margin:0"><label class="m">老師公布的進度碼 <input id="pc" type="number" placeholder="4 位數" style="width:100px"></label><button class="b go" data-b="enter">同步進度</button></span>';
+ document.getElementById("clk").innerHTML='<div><b>'+(st.done?"遊戲結束":"第 "+(st.r+1)+" / "+RN+" 個月　第 "+(st.cd%DPM+1)+" / "+DPM+" 天")+'</b></div>'+sc+tc}
+function render(){var T=[["mkt","股市"],["bank","銀行"],["news","新聞與線索"],["acct","帳戶"]];
+ document.getElementById("tabs").innerHTML=T.map(function(x){return '<button role="tab" data-t="'+x[0]+'" aria-selected="'+(tab===x[0])+'">'+x[1]+'</button>'}).join("");
+ document.getElementById("v").innerHTML=tab==="mkt"?mkt():tab==="bank"?bank():tab==="news"?news():acct();hdr()}
+function trade(a){var q=Math.floor(+document.getElementById("q").value),p=px(sel),h=st.hold[sel]||{q:0,c:0},s=STK.filter(function(x){return x.id===sel})[0];
+ if(st.done)return say("遊戲已結束。");if(!(q>0))return say("請輸入大於 0 的整數股數。");
+ if(a==="buy"){var amt=q*p,c=amt+fee(amt);if(c>st.cash)return say("現金不足，需要 "+f(c)+" 元。");
+  st.cash-=c;h.q+=q;h.c+=c;st.hold[sel]=h;note("買進 "+s.n+" "+f(q)+" 股 @ "+f(p,2)+"，手續費 "+f(fee(amt))+" 元");say("已買進 "+s.n+"。")}
+ else{if(q>h.q)return say("持股不足：只有 "+f(h.q)+" 股。");var g=q*p,tx=Math.round(g*(s.e?.001:.003)),fe=fee(g);
+  st.cash+=g-fe-tx;h.c-=h.c*q/h.q;h.q-=q;if(h.q<1)delete st.hold[sel];else st.hold[sel]=h;note("賣出 "+s.n+" "+f(q)+" 股 @ "+f(p,2)+"，手續費 "+f(fe)+"、證交稅 "+f(tx)+" 元");say("已賣出 "+s.n+"。")}
+ save();render()}
+function bk(a,i){var A=function(id){return Math.floor(+document.getElementById(id).value)};
+ if(st.done)return;
+ if(a==="in"||a==="out"){var m=A("bd");if(!(m>0))return say("請輸入金額。");
+  if(a==="in"){if(m>st.cash)return say("現金不足。");st.cash-=m;st.bank+=m;note("存入活存 "+f(m)+" 元")}else{if(m>st.bank)return say("活存餘額不足。");st.bank-=m;st.cash+=m;note("提領活存 "+f(m)+" 元")}}
+ else if(a==="fx"){var m2=A("fd"),k=document.getElementById("dk").value;if(!(m2>0))return say("請輸入金額。");if(m2>st.cash)return say("現金不足。");
+  st.cash-=m2;st.fx.push({k:k,a:m2,m:st.r+(k==="m2"?1:0)});note("存入"+DEP[k].n+" "+f(m2)+" 元")}
+ else if(a==="brk"){var x=st.fx.splice(i,1)[0];st.cash+=x.a;note("提前解約"+DEP[x.k].n+"，只拿回本金 "+f(x.a)+" 元")}
+ else if(a==="clue"){var c=document.getElementById("cc").value.trim().toUpperCase();if(!RUM.some(function(r){return r.c===c}))return say("查無此代碼。");if(st.clue.indexOf(c)>=0)return say("已解鎖過。");st.clue.push(c);say("已解鎖線索 "+c+"。")}
+ save();render()}
+function endMonth(){var r=st.r;
+ if(st.bank>0){var i=Math.round(st.bank*DEP.dem.r);st.bank+=i;note("活存利息 +"+f(i)+" 元")}
+ st.fx=st.fx.filter(function(x){if(x.m===r){var i=Math.round(x.a*DEP[x.k].r);st.cash+=x.a+i;note(DEP[x.k].n+"到期，本金 "+f(x.a)+" + 利息 "+f(i)+" 元");return false}return true});
+ if(r>=RN-1){st.done=true;tab="acct";say("三個月結束！請看帳戶結算。")}else{st.r++;st.cd=st.r*DPM;say("第 "+(r+1)+" 個月結束，已結算利息與定存。準備好就開始下個月。")}
+ save();render()}
+document.addEventListener("click",function(e){var t=e.target.closest("[data-t],[data-sel],[data-a],[data-b]");if(!t)return;var d=t.dataset;
+ if(d.t){tab=d.t;render()}else if(d.sel){sel=d.sel;render()}else if(d.a)trade(d.a);
+ else if(d.b==="enter")enter();
+ else if(/^t(1|5|end|next)$/.test(d.b))tgo(d.b);
+ else bk(d.b,+d.i)});
+document.addEventListener("keydown",function(e){if(e.key==="Enter"&&e.target.dataset&&e.target.dataset.sel){sel=e.target.dataset.sel;render()}});
+document.addEventListener("input",function(e){if(e.target.id)V[e.target.id]=e.target.value});
+document.getElementById("apply").onclick=function(){if(!confirm("這會清除目前進度，確定嗎？"))return;st=fresh(7,30);P=gen(7);tab="mkt";save();say("已重新開始。");render()};
+document.getElementById("tl").onclick=function(e){e.preventDefault();var w=prompt("請輸入教師密碼");if(w===TPW){isT=true;render()}else if(w!==null)say("密碼不正確。")};
+st=load();P=gen(st.seed);render();try{if(window.claude&&claude.use)claude.use("user").then(function(u){return u?u.isOwner():false}).then(function(o){if(o){isT=true;render()}}).catch(function(){})}catch(e){}
+</script>
+</body>
+</html>
